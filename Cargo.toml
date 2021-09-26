@@ -1,0 +1,33 @@
+[package]
+name = "rust_ssr"
+version = "0.1.0"
+authors = ["Valerio <valerioageno@yahoo.it>"]
+edition = "2018"
+description = "Server side rendering with the v8 engine for parse and evaluate the javascript code"
+readme = "./README.md"
+homepage = "https://github.com/abnud1/rust-ssr"
+documentation = "https://docs.rs/rust_ssr"
+repository = "https://github.com/abnud1/rust-ssr"
+keywords = ["web", "ssr", "react", "actix", "server-side-render"]
+categories = ["web-programming"]
+license-file = "./LICENSE"
+autoexamples = false
+include = [
+    "src/*.rs",
+    "Cargo.toml",
+]
+
+[lib]
+name = "rust_ssr"
+path = "src/lib.rs"
+
+[dependencies]
+rusty_v8 = "0.30.0"
+lazy_static = "1.4.0"
+[dev-dependencies]
+criterion = "0.3.4"
+
+[[bench]]
+name = "benchmark"
+path = "benches/benchmark.rs"
+harness = false
