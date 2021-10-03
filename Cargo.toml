@@ -19,7 +19,6 @@ include = [
 
 [lib]
 name = "rust_ssr"
-path = "src/lib.rs"
 
 [dependencies]
 rusty_v8 = "0.30.0"
