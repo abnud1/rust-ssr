@@ -18,7 +18,7 @@
 //! The whole logic is stored inside the <a href="./struct.Ssr.html#method.render_to_string">render_to_string()</a> function.
 //!
 //! ```no_run
-//! use ssr_rs::SsrEngine;
+//! use rust_ssr::SsrEngine;
 //! use std::fs::read_to_string;
 //!
 //! fn main() {
@@ -27,7 +27,7 @@
 //!     let mut ssr = SsrEngine::new();
 //!     let html = ssr.render_to_string(&source, "entryPoint", None);
 //!    
-//!     assert_eq!(html, "<!doctype html><html>...</html>".to_string());
+//!     assert_eq!(html, Ok("<!doctype html><html>...</html>".to_string()));
 //! }
 //! ```
 //! Check how to use it with actix, rocket, warp and other frameworks <a href="https://github.com/Valerioageno/ssr-rs/tree/main/examples" target="_blank">here</a>.
@@ -35,7 +35,7 @@
 //!  # Example with initial props
 //!
 //! ```no_run
-//! use ssr_rs::SsrEngine;
+//! use rust_ssr::SsrEngine;
 //! use std::fs::read_to_string;
 //!
 //! fn main() {
@@ -53,7 +53,7 @@
 //!     let mut ssr = SsrEngine::new();
 //!     let html = ssr.render_to_string(&source, "entryPoint", Some(&props));
 //!    
-//!     assert_eq!(html, "<!doctype html><html>...</html>".to_string());
+//!     assert_eq!(html, Ok("<!doctype html><html>...</html>".to_string()));
 //! }
 #[macro_use]
 extern crate lazy_static;
