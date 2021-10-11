@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use rusty_v8 as v8;
-use v8::{script_compiler::Source, Context, Global, OwnedIsolate};
+use v8::{script_compiler::Source, Context, DataError, Global, ModuleStatus, OwnedIsolate};
 
 pub struct SsrEngine {
     isolate: OwnedIsolate,
@@ -94,13 +94,26 @@ impl SsrEngine {
             module.instantiate_module(scope, |_, _, _, _| None),
             Some(true)
         ) {
-            module
-                .evaluate(scope)
-                .ok_or("exception occured while running module's code")?;
-            let exports: v8::Local<v8::Object> =
-                v8::Local::try_from(module.get_module_namespace()).unwrap();
-            let default_export_name = v8::String::new(scope, "default").unwrap();
-            let default_export = (*exports).get(scope, default_export_name.into()).unwrap();
+            module.evaluate(scope).ok_or("failed to evaluate module")?;
+            if module.get_status() == ModuleStatus::Errored {
+                let exception = module
+                    .get_exception()
+                    .to_object(scope)
+                    .ok_or("failed to convert exception to an object")?;
+                let message_name =
+                    v8::String::new(scope, "message").ok_or("failed to create message string")?;
+                let exception_message = (*exception)
+                    .get(scope, message_name.into())
+                    .ok_or("failed to get exception message")?;
+                return Err(exception_message.to_rust_string_lossy(scope));
+            }
+            let exports: v8::Local<v8::Object> = v8::Local::try_from(module.get_module_namespace())
+                .map_err(|op: DataError| op.to_string())?;
+            let default_export_name =
+                v8::String::new(scope, "default").ok_or("failed to create default string")?;
+            let default_export = (*exports)
+                .get(scope, default_export_name.into())
+                .ok_or("module have a default export")?;
             let func: v8::Local<v8::Function> = unsafe { v8::Local::cast(default_export) };
 
             //let func: v8::Local<v8::Function> = unsafe { v8::Local::cast(object) };
@@ -110,11 +123,15 @@ impl SsrEngine {
             };
 
             let undef = v8::undefined(scope).into();
-
+            let try_catch = &mut v8::TryCatch::new(scope);
             let result = func
-                .call(scope, undef, &[params])
-                .ok_or("Are all needed props provided?")?;
-            let rendered = result.to_rust_string_lossy(scope);
+                .call(try_catch, undef, &[params])
+                .ok_or("default export is not a function")?;
+            if try_catch.message().is_some() {
+                let message = try_catch.message().unwrap().get(try_catch);
+                return Err(message.to_rust_string_lossy(try_catch));
+            }
+            let rendered = result.to_rust_string_lossy(try_catch);
             Ok(rendered)
         } else {
             Err("failed to instantiate Module".to_string())
