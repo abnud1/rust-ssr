@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 
-use rusty_v8 as v8;
 use v8::{script_compiler::Source, Context, DataError, Global, ModuleStatus, OwnedIsolate};
 
 pub struct SsrEngine {
